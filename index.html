@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI Project Priority Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .header { 
+            background: linear-gradient(135deg, #0078d4, #106ebe); 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            border-radius: 10px 10px 0 0; 
+        }
+        .content { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            padding: 20px; 
+        }
+        .form-section { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 8px; 
+        }
+        .chart-section { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+        }
+        .form-group { 
+            margin-bottom: 15px; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: 600; 
+            color: #333; 
+        }
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+        .btn { 
+            background: #0078d4; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+            width: calc(50% - 10px); 
+        }
+        .btn:hover { 
+            background: #106ebe; 
+        }
+        .btn-warning { 
+            background: #ff9500; 
+        }
+        .btn-secondary { 
+            background: #6c757d; 
+        }
+        .chart-container { 
+            position: relative; 
+            height: 400px; 
+            margin-bottom: 15px; 
+        }
+        .priority-result { 
+            text-align: center; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 15px 0; 
+            font-weight: bold; 
+        }
+        .rank-1 { background: #27ae60; color: white; }
+        .rank-2 { background: #0078d4; color: white; }
+        .rank-3 { background: #e67e22; color: white; }
+        .rank-4 { background: #e74c3c; color: white; }
+        .partial { background: #ff9500; color: white; }
+        .projects-list { 
+            max-height: 300px; 
+            overflow-y: auto; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            padding: 10px; 
+        }
+        .project-item { 
+            background: white; 
+            border: 1px solid #eee; 
+            border-radius: 4px; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            cursor: pointer; 
+        }
+        .project-item:hover { 
+            background: #f8f9fa; 
+        }
+        .rank-badge { 
+            display: inline-block; 
+            width: 25px; 
+            height: 25px; 
+            border-radius: 50%; 
+            color: white; 
+            font-weight: bold; 
+            text-align: center; 
+            line-height: 25px; 
+            margin-right: 10px; 
+        }
+        .tabs { 
+            display: flex; 
+            margin-bottom: 15px; 
+        }
+        .tab { 
+            flex: 1; 
+            padding: 10px; 
+            background: #e9ecef; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .tab.active { 
+            background: #0078d4; 
+            color: white; 
+        }
+        .tab-content { 
+            display: none; 
+        }
+        .tab-content.active { 
+            display: block; 
+        }
+        @media (max-width: 1000px) {
+            .content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CI Project Priority Ranking Tool</h1>
+            <p>Collaborative Project Assessment & Prioritization</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-section">
+                <form id="priorityForm">
+                    <div class="form-group">
+                        <label for="projectName">Project Name *</label>
+                        <input type="text" id="projectName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="costPerSite">Cost Per Site ($)</label>
+                        <input type="number" id="costPerSite" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="annualSavings">Annual Savings Per Site ($)</label>
+                        <input type="number" id="annualSavings" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sitesImpacted">Number of Sites Impacted</label>
+                        <input type="number" id="sitesImpacted" min="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="installCost">Total Installation Cost ($)</label>
+                        <input type="number" id="installCost" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalCost">Total Project Cost ($)</label>
+                        <input type="number" id="totalCost" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="laborType">Labor Requirements</label>
+                        <select id="laborType">
+                            <option value="">Select...</option>
+                            <option value="Internal">Internal labor only</option>
+                            <option value="Minimal External">Minimal external (<20%)</option>
+                            <option value="Moderate External">Moderate external (20-50%)</option>
+                            <option value="Significant External">Significant external (50-80%)</option>
+                            <option value="Primarily External">Primarily external (>80%)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="safetyDriven">Safety Impact</label>
+                        <select id="safetyDriven">
+                            <option value="">Select...</option>
+                            <option value="Immediate Hazard">Addresses immediate safety hazard</option>
+                            <option value="Prevents Incidents">Prevents potential safety incidents</option>
+                            <option value="Improves Conditions">Improves safety conditions</option>
+                            <option value="Minor Enhancement">Minor safety enhancement</option>
+                            <option value="No Impact">No safety impact</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="roiType">ROI Type</label>
+                        <select id="roiType">
+                            <option value="">Select...</option>
+                            <option value="Safety ROI">Safety ROI (risk mitigation)</option>
+                            <option value="Combined ROI">Combined safety and financial ROI</option>
+                            <option value="Strong Financial">Strong financial ROI (>3:1)</option>
+                            <option value="Moderate Financial">Moderate financial ROI (2-3:1)</option>
+                            <option value="Weak Financial">Weak financial ROI (<2:1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lphReduction">LPH Reduction (hours/year)</label>
+                        <input type="number" id="lphReduction" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dthReduction">DTH Reduction (hours/year)</label>
+                        <input type="number" id="dthReduction" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pmReduction">PM Labor Reduction (hours/year)</label>
+                        <input type="number" id="pmReduction" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pilotStatus">Pilot Program Status</label>
+                        <select id="pilotStatus">
+                            <option value="">Select...</option>
+                            <option value="Successful">Successful pilot completed</option>
+                            <option value="Completed Minor Mods">Pilot completed with minor modifications</option>
+                            <option value="Limited Pilot">Limited pilot/proof of concept</option>
+                            <option value="Planned">Pilot planned but not executed</option>
+                            <option value="No Pilot">No pilot conducted</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="businessUnit">Business Unit</label>
+                        <select id="businessUnit">
+                            <option value="">Select...</option>
+                            <option value="ARS">ARS (Highest Priority)</option>
+                            <option value="High Priority BU">High Priority BU</option>
+                            <option value="Standard BU">Standard Priority BU</option>
+                            <option value="Lower Priority BU">Lower Priority BU</option>
+                            <option value="Lowest Priority BU">Lowest Priority BU</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="requestOrigin">Request Origin</label>
+                        <select id="requestOrigin">
+                            <option value="">Select...</option>
+                            <option value="Direct Client">Direct client request</option>
+                            <option value="Client Influenced">Client-influenced request</option>
+                            <option value="Site Client Benefit">Site-initiated with client benefit</option>
+                            <option value="Site Operational">Site-initiated operational improvement</option>
+                            <option value="Site Convenience">Site-initiated convenience</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="timeline">Implementation Timeline</label>
+                        <select id="timeline">
+                            <option value="">Select...</option>
+                            <option value="Under 3 Months"><3 months</option>
+                            <option value="3-6 Months">3-6 months</option>
+                            <option value="6-12 Months">6-12 months</option>
+                            <option value="12-18 Months">12-18 months</option>
+                            <option value="Over 18 Months">>18 months</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn">Calculate Priority</button>
+                    <button type="button" class="btn btn-warning" onclick="submitPartial()">Save Partial</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                </form>
+                
+                <div id="priorityResult" class="priority-result" style="display: none;">
+                    <div id="priorityScore"></div>
+                    <div id="priorityLevel"></div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('chart')">Priority Matrix</button>
+                    <button class="tab" onclick="showTab('log')">Project Log</button>
+                </div>
+                
+                <div id="chartTab" class="tab-content active">
+                    <div class="chart-container">
+                        <canvas id="priorityChart"></canvas>
+                    </div>
+                    <p style="text-align: center; color: #666; font-size: 14px;">
+                        <strong>X-axis:</strong> Implementation Ease | <strong>Y-axis:</strong> Impact Score<br>
+                        <strong>Click points for details</strong>
+                    </p>
+                </div>
+                
+                <div id="logTab" class="tab-content">
+                    <div class="projects-list" id="projectsList">
+                        <p style="text-align: center; color: #666;">No projects yet. Add your first project!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let projectsData = [];
+        let chart = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+        });
+        
+        function initChart() {
+            const ctx = document.getElementById('priorityChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: { datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Project Priority Matrix' },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Implementation Ease →' }, min: 0, max: 5 },
+                        y: { title: { display: true, text: 'Impact Score →' }, min: 0, max: 5 }
+                    },
+                    elements: { point: { radius: 8, hoverRadius: 12 } },
+                    onClick: function(event, elements) {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const datasetIndex = elements[0].datasetIndex;
+                            const datasets = chart.data.datasets;
+                            const clickedPoint = datasets[datasetIndex].data[index];
+                            
+                            const project = projectsData.find(p => {
+                                const x = calculateComplexityScore(p.data);
+                                const y = calculateImpactScore(p.data);
+                                return Math.abs(x - clickedPoint.x) < 0.1 && Math.abs(y - clickedPoint.y) < 0.1;
+                            });
+                            
+                            if (project) {
+                                alert(`Project: ${project.name}\nRank: ${project.rank}\nScore: ${project.priorityScore.toFixed(2)}\nStatus: ${project.isPartial ? 'Partial Assessment' : 'Complete'}`);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function calculateImpactScore(data) {
+            let impact = 0;
+            impact += scoreValue(data.annualSavings || 0, 'annualSavings') * 0.3;
+            impact += getChoiceScore(data.safetyDriven) * 0.4;
+            impact += scoreValue(data.lphReduction || 0, 'lphReduction') * 0.1;
+            impact += scoreValue(data.dthReduction || 0, 'dthReduction') * 0.1;
+            impact += scoreValue(data.pmReduction || 0, 'pmReduction') * 0.1;
+            return impact;
+        }
+        
+        function calculateComplexityScore(data) {
+            let complexity = 0;
+            complexity += getChoiceScore(data.timeline) * 0.4;
+            complexity += scoreValue(data.sitesImpacted || 1, 'sitesImpacted') * 0.3;
+            complexity += getChoiceScore(data.pilotStatus) * 0.2;
+            complexity += getChoiceScore(data.laborType) * 0.1;
+            return complexity;
+        }
+        
+        function scoreValue(value, type) {
+            if (!value) return 3;
+            switch(type) {
+                case 'annualSavings':
+                    if (value > 100000) return 5;
+                    if (value > 50000) return 4;
+                    if (value > 25000) return 3;
+                    if (value > 10000) return 2;
+                    return 1;
+                case 'sitesImpacted':
+                    if (value === 1) return 5;
+                    if (value <= 3) return 4;
+                    if (value <= 6) return 3;
+                    if (value <= 10) return 2;
+                    return 1;
+                case 'lphReduction':
+                case 'pmReduction':
+                    if (value > 100) return 5;
+                    if (value > 50) return 4;
+                    if (value > 20) return 3;
+                    if (value > 5) return 2;
+                    return 1;
+                case 'dthReduction':
+                    if (value > 50) return 5;
+                    if (value > 25) return 4;
+                    if (value > 10) return 3;
+                    if (value > 2) return 2;
+                    return 1;
+                default:
+                    return 3;
+            }
+        }
+        
+        function getChoiceScore(choice) {
+            const choiceScores = {
+                'Immediate Hazard': 5, 'Prevents Incidents': 4, 'Improves Conditions': 3, 'Minor Enhancement': 2, 'No Impact': 1,
+                'Under 3 Months': 5, '3-6 Months': 4, '6-12 Months': 3, '12-18 Months': 2, 'Over 18 Months': 1,
+                'Successful': 5, 'Completed Minor Mods': 4, 'Limited Pilot': 3, 'Planned': 2, 'No Pilot': 1,
+                'Internal': 5, 'Minimal External': 4, 'Moderate External': 3, 'Significant External': 2, 'Primarily External': 1,
+                'ARS': 5, 'High Priority BU': 4, 'Standard BU': 3, 'Lower Priority BU': 2, 'Lowest Priority BU': 1,
+                'Direct Client': 5, 'Client Influenced': 4, 'Site Client Benefit': 3, 'Site Operational': 2, 'Site Convenience': 1,
+                'Safety ROI': 5, 'Combined ROI': 4, 'Strong Financial': 3, 'Moderate Financial': 2, 'Weak Financial': 1
+            };
+            return choiceScores[choice] || 3;
+        }
+        
+        function calculatePriority(formData) {
+            const weights = {
+                costPerSite: 0.09, annualSavings: 0.14, sitesImpacted: 0.10, installCost: 0.08, totalCost: 0.07,
+                laborType: 0.05, safetyDriven: 0.20, roiType: 0.05, lphReduction: 0.03, dthReduction: 0.02,
+                pmReduction: 0.03, pilotStatus: 0.08, businessUnit: 0.14, requestOrigin: 0.12, timeline: 0.10
+            };
+            
+            let totalScore = 0;
+            let filledFields = 0;
+            
+            for (let field in weights) {
+                let score;
+                if (['lphReduction', 'dthReduction', 'pmReduction', 'costPerSite', 'annualSavings', 'sitesImpacted', 'installCost', 'totalCost'].includes(field)) {
+                    score = scoreValue(formData[field] || 0, field);
+                } else {
+                    score = getChoiceScore(formData[field]) || 3;
+                }
+                totalScore += score * weights[field];
+                if (formData[field]) filledFields++;
+            }
+            
+            return {
+                score: totalScore,
+                completeness: (filledFields / Object.keys(weights).length) * 100,
+                isPartial: filledFields < Object.keys(weights).length
+            };
+        }
+        
+        function calculateRank(priority, impact, complexity) {
+            if (impact >= 3.5 && complexity >= 3.5) return 1;
+            if (impact >= 3 && complexity >= 3) return 2;
+            if (impact >= 2 || complexity >= 2) return 3;
+            return 4;
+        }
+        
+        function updateChart() {
+            const datasets = [
+                { label: 'Rank 1', data: [], backgroundColor: 'rgba(39, 174, 96, 0.8)', borderColor: 'rgba(39, 174, 96, 1)', borderWidth: 2 },
+                { label: 'Rank 2', data: [], backgroundColor: 'rgba(52, 152, 219, 0.8)', borderColor: 'rgba(52, 152, 219, 1)', borderWidth: 2 },
+                { label: 'Rank 3', data: [], backgroundColor: 'rgba(230, 126, 34, 0.8)', borderColor: 'rgba(230, 126, 34, 1)', borderWidth: 2 },
+                { label: 'Rank 4', data: [], backgroundColor: 'rgba(231, 76, 60, 0.8)', borderColor: 'rgba(231, 76, 60, 1)', borderWidth: 2 },
+                { label: 'Partial', data: [], backgroundColor: 'rgba(255, 149, 0, 0.8)', borderColor: 'rgba(255, 149, 0, 1)', borderWidth: 2 }
+            ];
+            
+            projectsData.forEach(project => {
+                const x = calculateComplexityScore(project.data);
+                const y = calculateImpactScore(project.data);
+                const datasetIndex = project.isPartial ? 4 : project.rank - 1;
+                datasets[datasetIndex].data.push({ x: x, y: y, label: project.name });
+            });
+            
+            chart.data.datasets = datasets;
+            chart.update();
+        }
+        
+        function updateProjectsList() {
+            const container = document.getElementById('projectsList');
+            
+            if (projectsData.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No projects yet. Add your first project!</p>';
+                return;
+            }
+            
+            const sortedProjects = [...projectsData].sort((a, b) => b.priorityScore - a.priorityScore);
+            
+            container.innerHTML = sortedProjects.map(project => {
+                const rankClass = project.isPartial ? 'partial' : `rank-${project.rank}`;
+                return `
+                    <div class="project-item">
+                        ${!project.isPartial ? `<span class="rank-badge ${rankClass}">${project.rank}</span>` : '<span class="rank-badge partial">P</span>'}
+                        <strong>${project.name}</strong><br>
+                        Score: ${project.priorityScore.toFixed(2)} | 
+                        Rank: ${project.isPartial ? 'Partial' : project.rank} | 
+                        Complete: ${project.completeness.toFixed(1)}%
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        document.getElementById('priorityForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                projectName: document.getElementById('projectName').value,
+                costPerSite: parseFloat(document.getElementById('costPerSite').value) || 0,
+                annualSavings: parseFloat(document.getElementById('annualSavings').value) || 0,
+                sitesImpacted: parseInt(document.getElementById('sitesImpacted').value) || 1,
+                installCost: parseFloat(document.getElementById('installCost').value) || 0,
+                totalCost: parseFloat(document.getElementById('totalCost').value) || 0,
+                laborType: document.getElementById('laborType').value,
+                safetyDriven: document.getElementById('safetyDriven').value,
+                roiType: document.getElementById('roiType').value,
+                lphReduction: parseFloat(document.getElementById('lphReduction').value) || 0,
+                dthReduction: parseFloat(document.getElementById('dthReduction').value) || 0,
+                pmReduction: parseFloat(document.getElementById('pmReduction').value) || 0,
+                pilotStatus: document.getElementById('pilotStatus').value,
+                businessUnit: document.getElementById('businessUnit').value,
+                requestOrigin: document.getElementById('requestOrigin').value,
+                timeline: document.getElementById('timeline').value
+            };
+            
+            const priority = calculatePriority(formData);
+            const impact = calculateImpactScore(formData);
+            const complexity = calculateComplexityScore(formData);
+            const rank = calculateRank(priority.score, impact, complexity);
+            
+            const project = {
+                id: projectsData.length + 1,
+                name: formData.projectName,
+                data: formData,
+                priorityScore: priority.score,
+                rank: rank,
+                completeness: priority.completeness,
+                isPartial: priority.isPartial,
+                date: new Date().toLocaleDateString()
+            };
+            
+            projectsData.push(project);
+            updateChart();
+            updateProjectsList();
+            
+            document.getElementById('priorityResult').style.display = 'block';
+            document.getElementById('priorityScore').textContent = `Priority Score: ${priority.score.toFixed(2)}`;
+            document.getElementById('priorityLevel').textContent = `Rank: ${rank} | Completeness: ${priority.completeness.toFixed(1)}%`;
+            document.getElementById('priorityResult').className = `priority-result rank-${rank}`;
+        });
+        
+        function submitPartial() {
+            const formData = {
+                projectName: document.getElementById('projectName').value,
+                costPerSite: parseFloat(document.getElementById('costPerSite').value) || null,
+                annualSavings: parseFloat(document.getElementById('annualSavings').value) || null,
+                sitesImpacted: parseInt(document.getElementById('sitesImpacted').value) || null,
+                installCost: parseFloat(document.getElementById('installCost').value) || null,
+                totalCost: parseFloat(document.getElementById('totalCost').value) || null,
+                laborType: document.getElementById('laborType').value || null,
+                safetyDriven: document.getElementById('safetyDriven').value || null,
+                roiType: document.getElementById('roiType').value || null,
+                lphReduction: parseFloat(document.getElementById('lphReduction').value) || null,
+                dthReduction: parseFloat(document.getElementById('dthReduction').value) || null,
+                pmReduction: parseFloat(document.getElementById('pmReduction').value) || null,
+                pilotStatus: document.getElementById('pilotStatus').value || null,
+                businessUnit: document.getElementById('businessUnit').value || null,
+                requestOrigin: document.getElementById('requestOrigin').value || null,
+                timeline: document.getElementById('timeline').value || null
+            };
+            
+            if (!formData.projectName) {
+                alert('Project name is required for partial assessment');
+                return;
+            }
+            
+            const priority = calculatePriority(formData);
+            
+            const project = {
+                id: projectsData.length + 1,
+                name: formData.projectName,
+                data: formData,
+                priorityScore: priority.score,
+                rank: 0,
+                completeness: priority.completeness,
+                isPartial: true,
+                date: new Date().toLocaleDateString()
+            };
+            
+            projectsData.push(project);
+            updateChart();
+            updateProjectsList();
+            
+            document.getElementById('priorityResult').style.display = 'block';
+            document.getElementById('priorityScore').textContent = `Partial Assessment: ${priority.score.toFixed(2)}`;
+            document.getElementById('priorityLevel').textContent = `Completeness: ${priority.completeness.toFixed(1)}% - Needs More Data`;
+            document.getElementById('priorityResult').className = 'priority-result partial';
+        }
+        
+        function clearForm() {
+            document.getElementById('priorityForm').reset();
+            document.getElementById('priorityResult').style.display = 'none';
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName +
