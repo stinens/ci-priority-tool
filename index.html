@@ -12,6 +12,34 @@
             box-sizing: border-box;
         }
         
+        function calculateComplexity(sitesImpacted, timeline, laborType, totalCost) {
+            let complexity = 0;
+            
+            // More sites = more complex
+            if (sitesImpacted > 10) complexity += 5;
+            else if (sitesImpacted > 6) complexity += 4;
+            else if (sitesImpacted > 3) complexity += 3;
+            else if (sitesImpacted > 1) complexity += 2;
+            else complexity += 1;
+            
+            // Longer timeline = more complex
+            const timelineScore = parseInt(timeline) || 3;
+            complexity += (6 - timelineScore); // Invert so longer time = higher complexity
+            
+            // External labor = more complex
+            const laborScore = parseInt(laborType) || 3;
+            complexity += (6 - laborScore); // Invert so external labor = higher complexity
+            
+            // Higher cost = more complex
+            if (totalCost > 500000) complexity += 5;
+            else if (totalCost > 250000) complexity += 4;
+            else if (totalCost > 100000) complexity += 3;
+            else if (totalCost > 50000) complexity += 2;
+            else complexity += 1;
+            
+            return complexity / 4; // Average of the 4 factors
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
@@ -234,40 +262,135 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="costPerSite">Cost Per Site ($)</label>
+                    <input type="number" id="costPerSite" min="0">
+                </div>
+                
+                <div class="form-group">
                     <label for="annualSavings">Annual Savings Per Site ($)</label>
                     <input type="number" id="annualSavings" min="0">
                 </div>
                 
                 <div class="form-group">
+                    <label for="sitesImpacted">Number of Sites Impacted</label>
+                    <input type="number" id="sitesImpacted" min="1">
+                </div>
+                
+
+                
+                <div class="form-group">
+                    <label for="totalCost">Total Project Cost ($)</label>
+                    <input type="number" id="totalCost" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="laborType">Labor Requirements</label>
+                    <select id="laborType">
+                        <option value="">Select...</option>
+                        <option value="5">Internal labor only</option>
+                        <option value="4">Minimal external (<20%)</option>
+                        <option value="3">Moderate external (20-50%)</option>
+                        <option value="2">Significant external (50-80%)</option>
+                        <option value="1">Primarily external (>80%)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
                     <label for="safetyDriven">Safety Impact</label>
                     <select id="safetyDriven">
-                        <option value="1">No safety impact</option>
-                        <option value="2">Minor safety enhancement</option>
+                        <option value="">Select...</option>
+                        <option value="5">Addresses immediate safety hazard</option>
+                        <option value="4">Prevents potential safety incidents</option>
                         <option value="3">Improves safety conditions</option>
-                        <option value="4">Prevents potential incidents</option>
-                        <option value="5">Addresses immediate hazard</option>
+                        <option value="2">Minor safety enhancement</option>
+                        <option value="1">No safety impact</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sustainabilityImpact">Sustainability Impact</label>
+                    <select id="sustainabilityImpact">
+                        <option value="">Select...</option>
+                        <option value="5">Major sustainability improvement</option>
+                        <option value="4">Significant environmental benefit</option>
+                        <option value="3">Moderate sustainability impact</option>
+                        <option value="2">Minor environmental benefit</option>
+                        <option value="1">No sustainability impact</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="roiType">ROI Type</label>
+                    <select id="roiType">
+                        <option value="">Select...</option>
+                        <option value="5">Safety ROI (risk mitigation)</option>
+                        <option value="4">Combined safety and financial ROI</option>
+                        <option value="3">Strong financial ROI (>3:1)</option>
+                        <option value="2">Moderate financial ROI (2-3:1)</option>
+                        <option value="1">Weak financial ROI (<2:1)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="lphReduction">LPH Reduction (hours/year)</label>
+                    <input type="number" id="lphReduction" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="dthReduction">DTH Reduction (hours/year)</label>
+                    <input type="number" id="dthReduction" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="pmReduction">PM Labor Reduction (hours/year)</label>
+                    <input type="number" id="pmReduction" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="pilotStatus">Pilot Program Status</label>
+                    <select id="pilotStatus">
+                        <option value="">Select...</option>
+                        <option value="5">Successful pilot completed</option>
+                        <option value="4">Pilot completed with minor modifications</option>
+                        <option value="3">Limited pilot/proof of concept</option>
+                        <option value="2">Pilot planned but not executed</option>
+                        <option value="1">No pilot conducted</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="businessUnit">Business Unit</label>
                     <select id="businessUnit">
-                        <option value="1">Lowest Priority BU</option>
-                        <option value="2">Lower Priority BU</option>
-                        <option value="3">Standard Priority BU</option>
-                        <option value="4">High Priority BU</option>
+                        <option value="">Select...</option>
                         <option value="5">ARS (Highest Priority)</option>
+                        <option value="4">High Priority BU</option>
+                        <option value="3">Standard Priority BU</option>
+                        <option value="2">Lower Priority BU</option>
+                        <option value="1">Lowest Priority BU</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="requestOrigin">Request Origin</label>
+                    <select id="requestOrigin">
+                        <option value="">Select...</option>
+                        <option value="5">Direct client request</option>
+                        <option value="4">Client-influenced request</option>
+                        <option value="3">Site-initiated with client benefit</option>
+                        <option value="2">Site-initiated operational improvement</option>
+                        <option value="1">Site-initiated convenience</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="timeline">Implementation Timeline</label>
                     <select id="timeline">
-                        <option value="1">>18 months</option>
-                        <option value="2">12-18 months</option>
-                        <option value="3">6-12 months</option>
-                        <option value="4">3-6 months</option>
+                        <option value="">Select...</option>
                         <option value="5"><3 months</option>
+                        <option value="4">3-6 months</option>
+                        <option value="3">6-12 months</option>
+                        <option value="2">12-18 months</option>
+                        <option value="1">>18 months</option>
                     </select>
                 </div>
                 
@@ -292,7 +415,7 @@
                     </div>
                     <p style="text-align: center; color: #7f8c8d; font-size: 0.9em;">
                         <strong>Green=Rank 1, Blue=Rank 2, Orange=Rank 3, Red=Rank 4</strong><br>
-                        X-axis: Implementation Ease | Y-axis: Impact Score
+                        X-axis: Project Complexity | Y-axis: Project Priority
                     </p>
                 </div>
                 
@@ -346,7 +469,7 @@
                             x: {
                                 title: {
                                     display: true,
-                                    text: 'Implementation Ease →'
+                                    text: 'Project Complexity →'
                                 },
                                 min: 0,
                                 max: 5
@@ -354,7 +477,7 @@
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Impact Score →'
+                                    text: 'Project Priority →'
                                 },
                                 min: 0,
                                 max: 5
@@ -378,34 +501,120 @@
             updateStatus('Calculating priority...');
             
             try {
-                // Get form values
+                // Get all form values
                 const name = document.getElementById('projectName').value.trim();
-                const savings = parseFloat(document.getElementById('annualSavings').value) || 0;
-                const safety = parseInt(document.getElementById('safetyDriven').value) || 1;
-                const bu = parseInt(document.getElementById('businessUnit').value) || 1;
-                const timeline = parseInt(document.getElementById('timeline').value) || 1;
+                const costPerSite = parseFloat(document.getElementById('costPerSite').value) || 0;
+                const annualSavings = parseFloat(document.getElementById('annualSavings').value) || 0;
+                const sitesImpacted = parseInt(document.getElementById('sitesImpacted').value) || 0;
+                const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+                const laborType = document.getElementById('laborType').value;
+                const safety = document.getElementById('safetyDriven').value;
+                const sustainability = document.getElementById('sustainabilityImpact').value;
+                const roiType = document.getElementById('roiType').value;
+                const lphReduction = parseFloat(document.getElementById('lphReduction').value) || 0;
+                const dthReduction = parseFloat(document.getElementById('dthReduction').value) || 0;
+                const pmReduction = parseFloat(document.getElementById('pmReduction').value) || 0;
+                const pilotStatus = document.getElementById('pilotStatus').value;
+                const bu = document.getElementById('businessUnit').value;
+                const requestOrigin = document.getElementById('requestOrigin').value;
+                const timeline = document.getElementById('timeline').value;
                 
                 if (!name) {
                     alert('Please enter a project name');
                     return;
                 }
                 
-                // Calculate priority score
+                // Count filled fields for completeness
+                let filledFields = 1; // Project name is required
+                let totalFields = 16;
+                
+                if (costPerSite > 0) filledFields++;
+                if (annualSavings > 0) filledFields++;
+                if (sitesImpacted > 0) filledFields++;
+                if (totalCost > 0) filledFields++;
+                if (laborType) filledFields++;
+                if (safety) filledFields++;
+                if (sustainability) filledFields++;
+                if (roiType) filledFields++;
+                if (lphReduction > 0) filledFields++;
+                if (dthReduction > 0) filledFields++;
+                if (pmReduction > 0) filledFields++;
+                if (pilotStatus) filledFields++;
+                if (bu) filledFields++;
+                if (requestOrigin) filledFields++;
+                if (timeline) filledFields++;
+                
+                const completeness = (filledFields / totalFields) * 100;
+                const isPartial = completeness < 80;
+                
+                // Calculate priority score using weighted criteria
                 let score = 0;
-                score += safety * 1.0;  // Safety weight
-                score += bu * 0.8;      // Business unit weight
-                score += timeline * 0.6; // Timeline weight
                 
-                // Add savings component
-                if (savings > 100000) score += 1.0;
-                else if (savings > 50000) score += 0.8;
-                else if (savings > 25000) score += 0.6;
-                else if (savings > 10000) score += 0.4;
-                else if (savings > 0) score += 0.2;
+                // Safety (18% weight)
+                if (safety) score += parseInt(safety) * 0.18;
+                else score += 3 * 0.18; // Default middle value
                 
-                // Calculate impact and complexity for chart
-                const impact = (safety + (savings/50000)) / 2;
-                const complexity = (timeline + bu) / 2;
+                // Sustainability (18% weight) - same importance as safety
+                if (sustainability) score += parseInt(sustainability) * 0.18;
+                else score += 3 * 0.18; // Default middle value
+                
+                // Business Unit (14% weight)
+                if (bu) score += parseInt(bu) * 0.14;
+                else score += 3 * 0.14;
+                
+                // Annual Savings (14% weight)
+                if (annualSavings > 100000) score += 5 * 0.14;
+                else if (annualSavings > 50000) score += 4 * 0.14;
+                else if (annualSavings > 25000) score += 3 * 0.14;
+                else if (annualSavings > 10000) score += 2 * 0.14;
+                else if (annualSavings > 0) score += 1 * 0.14;
+                else score += 3 * 0.14;
+                
+                // Request Origin (12% weight)
+                if (requestOrigin) score += parseInt(requestOrigin) * 0.12;
+                else score += 3 * 0.12;
+                
+                // Timeline (10% weight)
+                if (timeline) score += parseInt(timeline) * 0.10;
+                else score += 3 * 0.10;
+                
+                // Sites Impacted (10% weight - fewer sites = higher score)
+                if (sitesImpacted === 1) score += 5 * 0.10;
+                else if (sitesImpacted <= 3) score += 4 * 0.10;
+                else if (sitesImpacted <= 6) score += 3 * 0.10;
+                else if (sitesImpacted <= 10) score += 2 * 0.10;
+                else if (sitesImpacted > 0) score += 1 * 0.10;
+                else score += 3 * 0.10;
+                
+                // Cost Per Site (9% weight - lower cost = higher score)
+                if (costPerSite <= 5000) score += 5 * 0.09;
+                else if (costPerSite <= 15000) score += 4 * 0.09;
+                else if (costPerSite <= 30000) score += 3 * 0.09;
+                else if (costPerSite <= 50000) score += 2 * 0.09;
+                else if (costPerSite > 0) score += 1 * 0.09;
+                else score += 3 * 0.09;
+                
+                // Pilot Status (8% weight)
+                if (pilotStatus) score += parseInt(pilotStatus) * 0.08;
+                else score += 3 * 0.08;
+                
+                // Other fields with smaller weights
+                if (laborType) score += parseInt(laborType) * 0.05;
+                else score += 3 * 0.05;
+                
+                if (roiType) score += parseInt(roiType) * 0.05;
+                else score += 3 * 0.05;
+                
+                // Hour reductions (small weights)
+                if (lphReduction > 100) score += 5 * 0.03;
+                else if (lphReduction > 50) score += 4 * 0.03;
+                else if (lphReduction > 20) score += 3 * 0.03;
+                else if (lphReduction > 5) score += 2 * 0.03;
+                else score += 1 * 0.03;
+                
+                // Calculate complexity and priority for chart
+                const complexity = calculateComplexity(sitesImpacted, timeline, laborType, totalCost);
+                const priority = score; // The calculated score IS the priority
                 
                 // Determine rank
                 let rank;
@@ -420,14 +629,16 @@
                     name: name,
                     score: score,
                     rank: rank,
-                    impact: Math.min(impact, 5),
                     complexity: Math.min(complexity, 5),
-                    savings: savings,
-                    safety: safety,
-                    bu: bu,
-                    timeline: timeline,
-                    isPartial: false,
-                    date: new Date().toLocaleDateString()
+                    priority: Math.min(priority, 5),
+                    completeness: completeness,
+                    isPartial: isPartial,
+                    date: new Date().toLocaleDateString(),
+                    data: {
+                        costPerSite, annualSavings, sitesImpacted, totalCost,
+                        laborType, safety, sustainability, roiType, lphReduction, dthReduction, pmReduction,
+                        pilotStatus, bu, requestOrigin, timeline
+                    }
                 };
                 
                 // Add to projects array
@@ -532,7 +743,7 @@
                             ${project.isPartial ? '<span class="partial-badge">PARTIAL</span>' : ''}
                         </h4>
                         <p><strong>Score:</strong> ${project.score.toFixed(2)} | <strong>Rank:</strong> ${project.isPartial ? 'Pending' : project.rank}</p>
-                        <p><strong>Date:</strong> ${project.date}</p>
+                        <p><strong>Completeness:</strong> ${project.completeness.toFixed(1)}% | <strong>Date:</strong> ${project.date}</p>
                     </div>
                 `;
             }).join('');
@@ -541,19 +752,32 @@
         function showResult(project) {
             const result = document.getElementById('priorityResult');
             document.getElementById('resultText').innerHTML = `
-                <strong>Rank ${project.rank}</strong><br>
-                Priority Score: ${project.score.toFixed(2)}
+                <strong>${project.isPartial ? 'Partial Assessment' : 'Rank ' + project.rank}</strong><br>
+                Priority Score: ${project.score.toFixed(2)}<br>
+                Completeness: ${project.completeness.toFixed(1)}%
             `;
-            result.className = `priority-display rank-${project.rank}`;
+            result.className = `priority-display ${project.isPartial ? 'partial' : 'rank-' + project.rank}`;
             result.style.display = 'block';
         }
         
         function clearAll() {
+            // Clear all form fields
             document.getElementById('projectName').value = '';
+            document.getElementById('costPerSite').value = '';
             document.getElementById('annualSavings').value = '';
-            document.getElementById('safetyDriven').value = '1';
-            document.getElementById('businessUnit').value = '1';
-            document.getElementById('timeline').value = '1';
+            document.getElementById('sitesImpacted').value = '';
+            document.getElementById('totalCost').value = '';
+            document.getElementById('laborType').value = '';
+            document.getElementById('safetyDriven').value = '';
+            document.getElementById('sustainabilityImpact').value = '';
+            document.getElementById('roiType').value = '';
+            document.getElementById('lphReduction').value = '';
+            document.getElementById('dthReduction').value = '';
+            document.getElementById('pmReduction').value = '';
+            document.getElementById('pilotStatus').value = '';
+            document.getElementById('businessUnit').value = '';
+            document.getElementById('requestOrigin').value = '';
+            document.getElementById('timeline').value = '';
             document.getElementById('priorityResult').style.display = 'none';
             updateStatus('Form cleared');
         }
