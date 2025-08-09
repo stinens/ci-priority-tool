@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CI Project Priority Ranking Tool</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -39,11 +39,6 @@
             font-size: 2.5em;
             margin-bottom: 10px;
             font-weight: 300;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
         }
         
         .main-content {
@@ -81,13 +76,6 @@
             border: 2px solid #e9ecef;
             border-radius: 8px;
             font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #0078d4;
-            box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
         }
         
         .btn {
@@ -98,14 +86,12 @@
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
             width: 100%;
             margin: 10px 0;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 120, 212, 0.3);
+            background: linear-gradient(135deg, #106ebe 0%, #0078d4 100%);
         }
         
         .btn-warning {
@@ -130,13 +116,7 @@
         .rank-2 { background: #0078d4; color: white; }
         .rank-3 { background: #e67e22; color: white; }
         .rank-4 { background: #e74c3c; color: white; }
-        .partial { background: #ff9500; color: white; animation: pulse 2s infinite; }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
+        .partial { background: #ff9500; color: white; }
         
         .chart-container {
             position: relative;
@@ -159,25 +139,12 @@
             margin-bottom: 10px;
             border-radius: 8px;
             border-left: 4px solid #0078d4;
-            cursor: pointer;
-            transition: all 0.3s ease;
             position: relative;
-        }
-        
-        .project-entry:hover {
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transform: translateX(5px);
-        }
-        
-        .project-entry.partial {
-            border-left-color: #ff9500;
         }
         
         .project-entry h4 {
             margin: 0 0 10px 0;
             color: #2c3e50;
-            display: flex;
-            align-items: center;
         }
         
         .project-entry p {
@@ -195,7 +162,6 @@
             font-weight: bold;
             text-align: center;
             line-height: 30px;
-            font-size: 1em;
             margin-right: 15px;
         }
         
@@ -216,7 +182,6 @@
             background: #ecf0f1;
             border-radius: 8px;
             margin-bottom: 20px;
-            overflow: hidden;
         }
         
         .tab {
@@ -225,7 +190,6 @@
             background: none;
             border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
             font-weight: 600;
         }
         
@@ -242,48 +206,14 @@
             display: block;
         }
         
-        .legend {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            font-size: 0.9em;
-        }
-        
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        @media (max-width: 1200px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .input-section {
-                border-right: none;
-                border-bottom: 1px solid #e9ecef;
-            }
-        }
-        
-        .debug {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+        .status {
+            background: #e7f3ff;
+            border: 1px solid #bee5eb;
             border-radius: 5px;
             padding: 10px;
             margin: 10px 0;
-            font-size: 12px;
-            color: #856404;
+            font-size: 14px;
+            color: #0c5460;
         }
     </style>
 </head>
@@ -296,132 +226,79 @@
         
         <div class="main-content">
             <div class="input-section">
-                <form id="priorityForm">
-                    <div class="form-group">
-                        <label for="projectName">Project Name *</label>
-                        <input type="text" id="projectName" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="costPerSite">Cost Per Site ($)</label>
-                        <input type="number" id="costPerSite" min="0">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="annualSavings">Annual Savings Per Site ($)</label>
-                        <input type="number" id="annualSavings" min="0">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="sitesImpacted">Number of Sites Impacted</label>
-                        <input type="number" id="sitesImpacted" min="1">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="safetyDriven">Safety Impact</label>
-                        <select id="safetyDriven">
-                            <option value="">Select...</option>
-                            <option value="5">Addresses immediate safety hazard</option>
-                            <option value="4">Prevents potential safety incidents</option>
-                            <option value="3">Improves safety conditions</option>
-                            <option value="2">Minor safety enhancement</option>
-                            <option value="1">No safety impact</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="businessUnit">Business Unit</label>
-                        <select id="businessUnit">
-                            <option value="">Select...</option>
-                            <option value="5">ARS (Highest Priority)</option>
-                            <option value="4">High Priority BU</option>
-                            <option value="3">Standard Priority BU</option>
-                            <option value="2">Lower Priority BU</option>
-                            <option value="1">Lowest Priority BU</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="requestOrigin">Request Origin</label>
-                        <select id="requestOrigin">
-                            <option value="">Select...</option>
-                            <option value="5">Direct client request</option>
-                            <option value="4">Client-influenced request</option>
-                            <option value="3">Site-initiated with client benefit</option>
-                            <option value="2">Site-initiated operational improvement</option>
-                            <option value="1">Site-initiated convenience</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="timeline">Implementation Timeline</label>
-                        <select id="timeline">
-                            <option value="">Select...</option>
-                            <option value="5"><3 months</option>
-                            <option value="4">3-6 months</option>
-                            <option value="3">6-12 months</option>
-                            <option value="2">12-18 months</option>
-                            <option value="1">>18 months</option>
-                        </select>
-                    </div>
-                    
-                    <button type="submit" class="btn">Calculate Priority</button>
-                    <button type="button" class="btn btn-warning" onclick="submitPartial()">Save Partial Assessment</button>
-                    <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
-                </form>
+                <div class="status" id="status">Ready to add projects</div>
                 
-                <div id="priorityResult" class="priority-display">
-                    <div id="priorityScore"></div>
-                    <div id="priorityLevel"></div>
+                <div class="form-group">
+                    <label for="projectName">Project Name *</label>
+                    <input type="text" id="projectName" required>
                 </div>
                 
-                <div class="debug" id="debugInfo">
-                    Debug: Ready for input
+                <div class="form-group">
+                    <label for="annualSavings">Annual Savings Per Site ($)</label>
+                    <input type="number" id="annualSavings" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="safetyDriven">Safety Impact</label>
+                    <select id="safetyDriven">
+                        <option value="1">No safety impact</option>
+                        <option value="2">Minor safety enhancement</option>
+                        <option value="3">Improves safety conditions</option>
+                        <option value="4">Prevents potential incidents</option>
+                        <option value="5">Addresses immediate hazard</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="businessUnit">Business Unit</label>
+                    <select id="businessUnit">
+                        <option value="1">Lowest Priority BU</option>
+                        <option value="2">Lower Priority BU</option>
+                        <option value="3">Standard Priority BU</option>
+                        <option value="4">High Priority BU</option>
+                        <option value="5">ARS (Highest Priority)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="timeline">Implementation Timeline</label>
+                    <select id="timeline">
+                        <option value="1">>18 months</option>
+                        <option value="2">12-18 months</option>
+                        <option value="3">6-12 months</option>
+                        <option value="4">3-6 months</option>
+                        <option value="5"><3 months</option>
+                    </select>
+                </div>
+                
+                <button type="button" class="btn" onclick="calculatePriority()">Calculate Priority</button>
+                <button type="button" class="btn btn-warning" onclick="savePartial()">Save Partial</button>
+                <button type="button" class="btn btn-secondary" onclick="clearAll()">Clear Form</button>
+                
+                <div id="priorityResult" class="priority-display">
+                    <div id="resultText"></div>
                 </div>
             </div>
             
             <div class="visualization-section">
                 <div class="tabs">
-                    <button class="tab active" onclick="showTab('chart')">Priority Matrix</button>
-                    <button class="tab" onclick="showTab('log')">Project Portfolio</button>
+                    <button class="tab active" onclick="showTab(event, 'chart')">Priority Matrix</button>
+                    <button class="tab" onclick="showTab(event, 'log')">Project Portfolio</button>
                 </div>
                 
-                <div id="chartTab" class="tab-content active">
+                <div id="chart" class="tab-content active">
                     <div class="chart-container">
                         <canvas id="priorityChart"></canvas>
                     </div>
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color rank-1" style="background: #27ae60;"></div>
-                            <span>Rank 1: High Priority & Easy</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color rank-2" style="background: #0078d4;"></div>
-                            <span>Rank 2: Medium Priority</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color rank-3" style="background: #e67e22;"></div>
-                            <span>Rank 3: Challenging</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color rank-4" style="background: #e74c3c;"></div>
-                            <span>Rank 4: Difficult & Expensive</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #ff9500;"></div>
-                            <span>Partial Assessment</span>
-                        </div>
-                    </div>
-                    <p style="text-align: center; color: #7f8c8d; font-size: 0.9em; margin-top: 10px;">
-                        <strong>X-axis:</strong> Implementation Ease →<br>
-                        <strong>Y-axis:</strong> Impact Score →<br>
-                        <strong>Click any point to see project details</strong>
+                    <p style="text-align: center; color: #7f8c8d; font-size: 0.9em;">
+                        <strong>Green=Rank 1, Blue=Rank 2, Orange=Rank 3, Red=Rank 4</strong><br>
+                        X-axis: Implementation Ease | Y-axis: Impact Score
                     </p>
                 </div>
                 
-                <div id="logTab" class="tab-content">
+                <div id="log" class="tab-content">
                     <div class="projects-log" id="projectsLog">
-                        <p style="text-align: center; color: #7f8c8d;">No projects evaluated yet. Add your first project!</p>
+                        <p style="text-align: center; color: #7f8c8d;">No projects yet. Add your first project!</p>
                     </div>
                 </div>
             </div>
@@ -429,56 +306,26 @@
     </div>
 
     <script>
-        console.log('Script starting...');
-        
-        let projectsData = [];
+        // Global variables
+        let projects = [];
         let chart = null;
-        let projectIdCounter = 1;
+        let projectCounter = 1;
         
-        // Debug function
-        function debug(message) {
-            console.log(message);
-            const debugEl = document.getElementById('debugInfo');
-            if (debugEl) {
-                debugEl.textContent = 'Debug: ' + message;
-            }
+        // Initialize when page loads
+        window.onload = function() {
+            updateStatus('Initializing chart...');
+            initializeChart();
+            updateStatus('Ready to add projects');
+        };
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
         }
         
-        // Wait for page to load
-        document.addEventListener('DOMContentLoaded', function() {
-            debug('Page loaded, initializing...');
-            initChart();
-            setupEventListeners();
-        });
-        
-        function setupEventListeners() {
-            debug('Setting up event listeners...');
-            
-            const form = document.getElementById('priorityForm');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    debug('Form submitted!');
-                    e.preventDefault();
-                    handleFormSubmit();
-                });
-            } else {
-                debug('ERROR: Form not found!');
-            }
-        }
-        
-        function initChart() {
-            debug('Initializing chart...');
-            
+        function initializeChart() {
             try {
-                const ctx = document.getElementById('priorityChart');
-                if (!ctx) {
-                    debug('ERROR: Chart canvas not found!');
-                    return;
-                }
-                
-                const chartCtx = ctx.getContext('2d');
-                
-                chart = new Chart(chartCtx, {
+                const ctx = document.getElementById('priorityChart').getContext('2d');
+                chart = new Chart(ctx, {
                     type: 'scatter',
                     data: {
                         datasets: []
@@ -515,208 +362,141 @@
                         },
                         elements: {
                             point: {
-                                radius: 10,
-                                hoverRadius: 15
+                                radius: 8,
+                                hoverRadius: 12
                             }
                         }
                     }
                 });
-                
-                debug('Chart initialized successfully!');
+                updateStatus('Chart initialized successfully');
             } catch (error) {
-                debug('ERROR initializing chart: ' + error.message);
+                updateStatus('Error initializing chart: ' + error.message);
             }
         }
         
-        function handleFormSubmit() {
-            debug('Processing form submission...');
+        function calculatePriority() {
+            updateStatus('Calculating priority...');
             
             try {
-                const formData = getFormData();
-                debug('Form data collected: ' + JSON.stringify(formData));
+                // Get form values
+                const name = document.getElementById('projectName').value.trim();
+                const savings = parseFloat(document.getElementById('annualSavings').value) || 0;
+                const safety = parseInt(document.getElementById('safetyDriven').value) || 1;
+                const bu = parseInt(document.getElementById('businessUnit').value) || 1;
+                const timeline = parseInt(document.getElementById('timeline').value) || 1;
                 
-                const priority = calculatePriority(formData);
-                debug('Priority calculated: ' + priority.score);
+                if (!name) {
+                    alert('Please enter a project name');
+                    return;
+                }
                 
-                const project = createProject(formData, priority);
-                debug('Project created: ' + project.name);
+                // Calculate priority score
+                let score = 0;
+                score += safety * 1.0;  // Safety weight
+                score += bu * 0.8;      // Business unit weight
+                score += timeline * 0.6; // Timeline weight
                 
-                projectsData.push(project);
-                debug('Project added to data. Total projects: ' + projectsData.length);
+                // Add savings component
+                if (savings > 100000) score += 1.0;
+                else if (savings > 50000) score += 0.8;
+                else if (savings > 25000) score += 0.6;
+                else if (savings > 10000) score += 0.4;
+                else if (savings > 0) score += 0.2;
                 
+                // Calculate impact and complexity for chart
+                const impact = (safety + (savings/50000)) / 2;
+                const complexity = (timeline + bu) / 2;
+                
+                // Determine rank
+                let rank;
+                if (score >= 4.5) rank = 1;
+                else if (score >= 3.5) rank = 2;
+                else if (score >= 2.5) rank = 3;
+                else rank = 4;
+                
+                // Create project object
+                const project = {
+                    id: projectCounter++,
+                    name: name,
+                    score: score,
+                    rank: rank,
+                    impact: Math.min(impact, 5),
+                    complexity: Math.min(complexity, 5),
+                    savings: savings,
+                    safety: safety,
+                    bu: bu,
+                    timeline: timeline,
+                    isPartial: false,
+                    date: new Date().toLocaleDateString()
+                };
+                
+                // Add to projects array
+                projects.push(project);
+                
+                // Update displays
                 updateChart();
                 updateProjectsLog();
                 showResult(project);
                 
-                debug('Form processing complete!');
+                updateStatus('Project added successfully! Total projects: ' + projects.length);
+                
             } catch (error) {
-                debug('ERROR in form submit: ' + error.message);
+                updateStatus('Error calculating priority: ' + error.message);
             }
         }
         
-        function getFormData() {
-            return {
-                projectName: document.getElementById('projectName').value,
-                costPerSite: parseFloat(document.getElementById('costPerSite').value) || 0,
-                annualSavings: parseFloat(document.getElementById('annualSavings').value) || 0,
-                sitesImpacted: parseInt(document.getElementById('sitesImpacted').value) || 1,
-                safetyDriven: parseInt(document.getElementById('safetyDriven').value) || 3,
-                businessUnit: parseInt(document.getElementById('businessUnit').value) || 3,
-                requestOrigin: parseInt(document.getElementById('requestOrigin').value) || 3,
-                timeline: parseInt(document.getElementById('timeline').value) || 3
-            };
-        }
-        
-        function calculatePriority(formData) {
-            // Simplified priority calculation
-            let score = 0;
-            let filledFields = 0;
-            let totalFields = 8;
+        function savePartial() {
+            updateStatus('Saving partial assessment...');
             
-            // Safety (highest weight)
-            score += formData.safetyDriven * 0.3;
-            if (formData.safetyDriven > 3) filledFields++;
+            const name = document.getElementById('projectName').value.trim();
+            if (!name) {
+                alert('Please enter a project name for partial assessment');
+                return;
+            }
             
-            // Business unit
-            score += formData.businessUnit * 0.25;
-            if (formData.businessUnit > 3) filledFields++;
-            
-            // Annual savings
-            if (formData.annualSavings > 100000) score += 1.0;
-            else if (formData.annualSavings > 50000) score += 0.8;
-            else if (formData.annualSavings > 25000) score += 0.6;
-            else if (formData.annualSavings > 0) score += 0.3;
-            if (formData.annualSavings > 0) filledFields++;
-            
-            // Cost efficiency
-            if (formData.costPerSite < 10000) score += 0.5;
-            else if (formData.costPerSite < 25000) score += 0.3;
-            else if (formData.costPerSite > 0) score += 0.1;
-            if (formData.costPerSite > 0) filledFields++;
-            
-            // Timeline
-            score += formData.timeline * 0.15;
-            if (formData.timeline > 3) filledFields++;
-            
-            // Request origin
-            score += formData.requestOrigin * 0.1;
-            if (formData.requestOrigin > 3) filledFields++;
-            
-            // Sites impacted (fewer sites = higher score)
-            if (formData.sitesImpacted === 1) score += 0.3;
-            else if (formData.sitesImpacted <= 3) score += 0.2;
-            else score += 0.1;
-            if (formData.sitesImpacted > 0) filledFields++;
-            
-            // Project name
-            if (formData.projectName.trim()) filledFields++;
-            
-            const completeness = (filledFields / totalFields) * 100;
-            const isPartial = completeness < 80;
-            
-            return {
-                score: Math.min(score, 5),
-                completeness: completeness,
-                isPartial: isPartial
-            };
-        }
-        
-        function createProject(formData, priority) {
-            const impact = calculateImpactScore(formData);
-            const complexity = calculateComplexityScore(formData);
-            const rank = calculateRank(priority.score, impact, complexity);
-            
-            return {
-                id: projectIdCounter++,
-                name: formData.projectName,
-                data: formData,
-                priorityScore: priority.score,
-                rank: rank,
-                completeness: priority.completeness,
-                isPartial: priority.isPartial,
-                impact: impact,
-                complexity: complexity,
+            const project = {
+                id: projectCounter++,
+                name: name,
+                score: 2.5,
+                rank: 0,
+                impact: 2.5,
+                complexity: 2.5,
+                isPartial: true,
                 date: new Date().toLocaleDateString()
             };
-        }
-        
-        function calculateImpactScore(data) {
-            let impact = 0;
-            impact += (data.annualSavings / 50000) * 0.4;
-            impact += data.safetyDriven * 0.6;
-            return Math.min(impact, 5);
-        }
-        
-        function calculateComplexityScore(data) {
-            let complexity = 0;
-            complexity += data.timeline * 0.5;
-            complexity += (6 - data.sitesImpacted) * 0.3; // Fewer sites = easier
-            complexity += data.businessUnit * 0.2;
-            return Math.min(complexity, 5);
-        }
-        
-        function calculateRank(priority, impact, complexity) {
-            if (impact >= 3.5 && complexity >= 3.5) return 1;
-            if (impact >= 3 && complexity >= 3) return 2;
-            if (impact >= 2 || complexity >= 2) return 3;
-            return 4;
+            
+            projects.push(project);
+            updateChart();
+            updateProjectsLog();
+            
+            const result = document.getElementById('priorityResult');
+            document.getElementById('resultText').innerHTML = '<strong>Partial Assessment Saved</strong><br>Complete data needed for full ranking';
+            result.className = 'priority-display partial';
+            result.style.display = 'block';
+            
+            updateStatus('Partial assessment saved');
         }
         
         function updateChart() {
-            debug('Updating chart with ' + projectsData.length + ' projects...');
-            
             if (!chart) {
-                debug('ERROR: Chart not initialized!');
+                updateStatus('Chart not available');
                 return;
             }
             
             try {
                 const datasets = [
-                    {
-                        label: 'Rank 1',
-                        data: [],
-                        backgroundColor: 'rgba(39, 174, 96, 0.8)',
-                        borderColor: 'rgba(39, 174, 96, 1)',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Rank 2',
-                        data: [],
-                        backgroundColor: 'rgba(0, 120, 212, 0.8)',
-                        borderColor: 'rgba(0, 120, 212, 1)',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Rank 3',
-                        data: [],
-                        backgroundColor: 'rgba(230, 126, 34, 0.8)',
-                        borderColor: 'rgba(230, 126, 34, 1)',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Rank 4',
-                        data: [],
-                        backgroundColor: 'rgba(231, 76, 60, 0.8)',
-                        borderColor: 'rgba(231, 76, 60, 1)',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Partial',
-                        data: [],
-                        backgroundColor: 'rgba(255, 149, 0, 0.8)',
-                        borderColor: 'rgba(255, 149, 0, 1)',
-                        borderWidth: 2
-                    }
+                    { label: 'Rank 1', data: [], backgroundColor: '#27ae60', borderColor: '#27ae60' },
+                    { label: 'Rank 2', data: [], backgroundColor: '#0078d4', borderColor: '#0078d4' },
+                    { label: 'Rank 3', data: [], backgroundColor: '#e67e22', borderColor: '#e67e22' },
+                    { label: 'Rank 4', data: [], backgroundColor: '#e74c3c', borderColor: '#e74c3c' },
+                    { label: 'Partial', data: [], backgroundColor: '#ff9500', borderColor: '#ff9500' }
                 ];
                 
-                projectsData.forEach(project => {
-                    const x = project.complexity;
-                    const y = project.impact;
+                projects.forEach(project => {
                     const datasetIndex = project.isPartial ? 4 : project.rank - 1;
-                    
                     datasets[datasetIndex].data.push({
-                        x: x,
-                        y: y,
+                        x: project.complexity,
+                        y: project.impact,
                         label: project.name
                     });
                 });
@@ -724,124 +504,77 @@
                 chart.data.datasets = datasets;
                 chart.update();
                 
-                debug('Chart updated successfully!');
+                updateStatus('Chart updated with ' + projects.length + ' projects');
             } catch (error) {
-                debug('ERROR updating chart: ' + error.message);
+                updateStatus('Error updating chart: ' + error.message);
             }
         }
         
         function updateProjectsLog() {
-            debug('Updating projects log...');
+            const container = document.getElementById('projectsLog');
             
-            const logContainer = document.getElementById('projectsLog');
-            if (!logContainer) {
-                debug('ERROR: Projects log container not found!');
+            if (projects.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No projects yet. Add your first project!</p>';
                 return;
             }
             
-            if (projectsData.length === 0) {
-                logContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No projects evaluated yet. Add your first project!</p>';
-                return;
-            }
+            const sorted = [...projects].sort((a, b) => b.score - a.score);
             
-            const sortedProjects = [...projectsData].sort((a, b) => b.priorityScore - a.priorityScore);
-            
-            logContainer.innerHTML = sortedProjects.map(project => {
+            container.innerHTML = sorted.map(project => {
                 const rankColors = {1: '#27ae60', 2: '#0078d4', 3: '#e67e22', 4: '#e74c3c'};
-                const rankColor = project.isPartial ? '#ff9500' : rankColors[project.rank];
+                const color = project.isPartial ? '#ff9500' : rankColors[project.rank];
                 
                 return `
-                    <div class="project-entry ${project.isPartial ? 'partial' : ''}" style="border-left-color: ${rankColor}">
+                    <div class="project-entry" style="border-left-color: ${color}">
                         <h4>
-                            ${!project.isPartial ? `<span class="rank-badge" style="background: ${rankColor}">${project.rank}</span>` : ''}
+                            ${!project.isPartial ? `<span class="rank-badge" style="background: ${color}">${project.rank}</span>` : ''}
                             ${project.name}
                             ${project.isPartial ? '<span class="partial-badge">PARTIAL</span>' : ''}
                         </h4>
-                        <p><strong>Score:</strong> ${project.priorityScore.toFixed(2)} | <strong>Rank:</strong> ${project.isPartial ? 'Pending' : project.rank}</p>
-                        <p><strong>Completeness:</strong> ${project.completeness.toFixed(1)}% | <strong>Date:</strong> ${project.date}</p>
+                        <p><strong>Score:</strong> ${project.score.toFixed(2)} | <strong>Rank:</strong> ${project.isPartial ? 'Pending' : project.rank}</p>
+                        <p><strong>Date:</strong> ${project.date}</p>
                     </div>
                 `;
             }).join('');
-            
-            debug('Projects log updated!');
         }
         
         function showResult(project) {
-            debug('Showing result...');
-            
-            const resultDiv = document.getElementById('priorityResult');
-            const scoreDiv = document.getElementById('priorityScore');
-            const levelDiv = document.getElementById('priorityLevel');
-            
-            if (!resultDiv || !scoreDiv || !levelDiv) {
-                debug('ERROR: Result elements not found!');
-                return;
+            const result = document.getElementById('priorityResult');
+            document.getElementById('resultText').innerHTML = `
+                <strong>Rank ${project.rank}</strong><br>
+                Priority Score: ${project.score.toFixed(2)}
+            `;
+            result.className = `priority-display rank-${project.rank}`;
+            result.style.display = 'block';
+        }
+        
+        function clearAll() {
+            document.getElementById('projectName').value = '';
+            document.getElementById('annualSavings').value = '';
+            document.getElementById('safetyDriven').value = '1';
+            document.getElementById('businessUnit').value = '1';
+            document.getElementById('timeline').value = '1';
+            document.getElementById('priorityResult').style.display = 'none';
+            updateStatus('Form cleared');
+        }
+        
+        function showTab(evt, tabName) {
+            // Hide all tab content
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
             }
             
-            scoreDiv.textContent = `Priority Score: ${project.priorityScore.toFixed(2)}`;
-            levelDiv.textContent = `Rank: ${project.isPartial ? 'Partial' : project.rank} | Completeness: ${project.completeness.toFixed(1)}%`;
-            
-            resultDiv.className = `priority-display ${project.isPartial ? 'partial' : 'rank-' + project.rank}`;
-            resultDiv.style.display = 'block';
-            
-            debug('Result displayed!');
-        }
-        
-        function submitPartial() {
-            debug('Submitting partial assessment...');
-            
-            const projectName = document.getElementById('projectName').value;
-            if (!projectName.trim()) {
-                alert('Project name is required for partial assessment');
-                return;
+            // Remove active class from all tabs
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
             }
             
-            const formData = getFormData();
-            const priority = calculatePriority(formData);
-            priority.isPartial = true;
-            priority.completeness = Math.min(priority.completeness, 75);
-            
-            const project = createProject(formData, priority);
-            project.isPartial = true;
-            
-            projectsData.push(project);
-            updateChart();
-            updateProjectsLog();
-            showResult(project);
-            
-            debug('Partial assessment saved!');
+            // Show the selected tab content and mark tab as active
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
         }
-        
-        function clearForm() {
-            debug('Clearing form...');
-            
-            document.getElementById('priorityForm').reset();
-            const resultDiv = document.getElementById('priorityResult');
-            if (resultDiv) {
-                resultDiv.style.display = 'none';
-            }
-            
-            debug('Form cleared!');
-        }
-        
-        function showTab(tabName) {
-            debug('Switching to tab: ' + tabName);
-            
-            // Remove active class from all tabs and contents
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // Add active class to clicked tab and corresponding content
-            event.target.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
-        }
-        
-        // Global functions for buttons
-        window.submitPartial = submitPartial;
-        window.clearForm = clearForm;
-        window.showTab = showTab;
-        
-        debug('Script loaded successfully!');
     </script>
 </body>
 </html>
