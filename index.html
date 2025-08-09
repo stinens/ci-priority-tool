@@ -12,34 +12,6 @@
             box-sizing: border-box;
         }
         
-        function calculateComplexity(sitesImpacted, timeline, laborType, totalCost) {
-            let complexity = 0;
-            
-            // More sites = more complex
-            if (sitesImpacted > 10) complexity += 5;
-            else if (sitesImpacted > 6) complexity += 4;
-            else if (sitesImpacted > 3) complexity += 3;
-            else if (sitesImpacted > 1) complexity += 2;
-            else complexity += 1;
-            
-            // Longer timeline = more complex
-            const timelineScore = parseInt(timeline) || 3;
-            complexity += (6 - timelineScore); // Invert so longer time = higher complexity
-            
-            // External labor = more complex
-            const laborScore = parseInt(laborType) || 3;
-            complexity += (6 - laborScore); // Invert so external labor = higher complexity
-            
-            // Higher cost = more complex
-            if (totalCost > 500000) complexity += 5;
-            else if (totalCost > 250000) complexity += 4;
-            else if (totalCost > 100000) complexity += 3;
-            else if (totalCost > 50000) complexity += 2;
-            else complexity += 1;
-            
-            return complexity / 4; // Average of the 4 factors
-        }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
@@ -275,8 +247,6 @@
                     <label for="sitesImpacted">Number of Sites Impacted</label>
                     <input type="number" id="sitesImpacted" min="1">
                 </div>
-                
-
                 
                 <div class="form-group">
                     <label for="totalCost">Total Project Cost ($)</label>
@@ -526,7 +496,7 @@
                 
                 // Count filled fields for completeness
                 let filledFields = 1; // Project name is required
-                let totalFields = 16;
+                let totalFields = 15; // Updated total
                 
                 if (costPerSite > 0) filledFields++;
                 if (annualSavings > 0) filledFields++;
@@ -552,11 +522,11 @@
                 
                 // Safety (18% weight)
                 if (safety) score += parseInt(safety) * 0.18;
-                else score += 3 * 0.18; // Default middle value
+                else score += 3 * 0.18;
                 
                 // Sustainability (18% weight) - same importance as safety
                 if (sustainability) score += parseInt(sustainability) * 0.18;
-                else score += 3 * 0.18; // Default middle value
+                else score += 3 * 0.18;
                 
                 // Business Unit (14% weight)
                 if (bu) score += parseInt(bu) * 0.14;
@@ -594,11 +564,10 @@
                 else if (costPerSite > 0) score += 1 * 0.09;
                 else score += 3 * 0.09;
                 
-                // Pilot Status (8% weight)
+                // Other fields with smaller weights
                 if (pilotStatus) score += parseInt(pilotStatus) * 0.08;
                 else score += 3 * 0.08;
                 
-                // Other fields with smaller weights
                 if (laborType) score += parseInt(laborType) * 0.05;
                 else score += 3 * 0.05;
                 
@@ -612,9 +581,32 @@
                 else if (lphReduction > 5) score += 2 * 0.03;
                 else score += 1 * 0.03;
                 
-                // Calculate complexity and priority for chart
-                const complexity = calculateComplexity(sitesImpacted, timeline, laborType, totalCost);
-                const priority = score; // The calculated score IS the priority
+                // Calculate complexity for chart
+                let complexity = 0;
+                
+                // More sites = more complex
+                if (sitesImpacted > 10) complexity += 5;
+                else if (sitesImpacted > 6) complexity += 4;
+                else if (sitesImpacted > 3) complexity += 3;
+                else if (sitesImpacted > 1) complexity += 2;
+                else complexity += 1;
+                
+                // Longer timeline = more complex (invert timeline score)
+                const timelineScore = parseInt(timeline) || 3;
+                complexity += (6 - timelineScore);
+                
+                // External labor = more complex (invert labor score)
+                const laborScore = parseInt(laborType) || 3;
+                complexity += (6 - laborScore);
+                
+                // Higher cost = more complex
+                if (totalCost > 500000) complexity += 5;
+                else if (totalCost > 250000) complexity += 4;
+                else if (totalCost > 100000) complexity += 3;
+                else if (totalCost > 50000) complexity += 2;
+                else complexity += 1;
+                
+                complexity = complexity / 4; // Average of the 4 factors
                 
                 // Determine rank
                 let rank;
@@ -630,7 +622,7 @@
                     score: score,
                     rank: rank,
                     complexity: Math.min(complexity, 5),
-                    priority: Math.min(priority, 5),
+                    priority: Math.min(score, 5),
                     completeness: completeness,
                     isPartial: isPartial,
                     date: new Date().toLocaleDateString(),
@@ -670,8 +662,9 @@
                 name: name,
                 score: 2.5,
                 rank: 0,
-                impact: 2.5,
                 complexity: 2.5,
+                priority: 2.5,
+                completeness: 30,
                 isPartial: true,
                 date: new Date().toLocaleDateString()
             };
@@ -681,7 +674,7 @@
             updateProjectsLog();
             
             const result = document.getElementById('priorityResult');
-            document.getElementById('resultText').innerHTML = '<strong>Partial Assessment Saved</strong><br>Complete data needed for full ranking';
+            document.getElementById('resultText').innerHTML = '<strong>Partial Assessment Saved</strong><br>Complete data needed for full ranking<br>Completeness: 30%';
             result.className = 'priority-display partial';
             result.style.display = 'block';
             
@@ -704,10 +697,13 @@
                 ];
                 
                 projects.forEach(project => {
+                    const x = project.complexity;
+                    const y = project.priority;
                     const datasetIndex = project.isPartial ? 4 : project.rank - 1;
+                    
                     datasets[datasetIndex].data.push({
-                        x: project.complexity,
-                        y: project.impact,
+                        x: x,
+                        y: y,
                         label: project.name
                     });
                 });
@@ -776,29 +772,4 @@
             document.getElementById('pmReduction').value = '';
             document.getElementById('pilotStatus').value = '';
             document.getElementById('businessUnit').value = '';
-            document.getElementById('requestOrigin').value = '';
-            document.getElementById('timeline').value = '';
-            document.getElementById('priorityResult').style.display = 'none';
-            updateStatus('Form cleared');
-        }
-        
-        function showTab(evt, tabName) {
-            // Hide all tab content
-            const tabContents = document.getElementsByClassName('tab-content');
-            for (let i = 0; i < tabContents.length; i++) {
-                tabContents[i].classList.remove('active');
-            }
-            
-            // Remove active class from all tabs
-            const tabs = document.getElementsByClassName('tab');
-            for (let i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove('active');
-            }
-            
-            // Show the selected tab content and mark tab as active
-            document.getElementById(tabName).classList.add('active');
-            evt.currentTarget.classList.add('active');
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('requestOrigin
